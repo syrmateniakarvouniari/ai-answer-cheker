@@ -47,7 +47,7 @@ class SearchTests(unittest.TestCase):
         with self.assertRaises(SearchError) as ctx:tavily_search('q','secret',post)
         self.assertTrue(ctx.exception.retryable);self.assertNotIn('secret',str(ctx.exception))
 
-    def test_tavily_only_configuration(self):
+    def test_search_configuration(self):
         for config in ({}, {'SEARCH_PROVIDER':'unknown'}, {'SEARCH_PROVIDER':'legacy'},
                        {'SEARCH_PROVIDER':'tavily','TAVILY_API_KEY':'secret'}):
             with self.assertRaises(ServiceError):select_search(config)
@@ -112,3 +112,13 @@ class SearchTests(unittest.TestCase):
 
 
 if __name__=='__main__':unittest.main()
+
+
+class AlternativeProviderTests(unittest.TestCase):
+    def test_duckduckgo_requires_no_tavily_key(self):
+        searcher,name=select_search({'SEARCH_PROVIDER':'duckduckgo'})
+        self.assertIn('DuckDuckGo',name)
+        with patch('ddgs.DDGS') as factory:
+            factory.return_value.text.return_value=[]
+            self.assertEqual(searcher('query'),[])
+            factory.return_value.text.assert_called_once_with('query',backend='duckduckgo',max_results=5)
