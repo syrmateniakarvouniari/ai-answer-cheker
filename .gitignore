@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+
+.test-tmp/
+*-results.json
+github-ready/
