@@ -47,18 +47,17 @@ class SearchTests(unittest.TestCase):
         with self.assertRaises(SearchError) as ctx:tavily_search('q','secret',post)
         self.assertTrue(ctx.exception.retryable);self.assertNotIn('secret',str(ctx.exception))
 
-    def test_explicit_configuration_no_fallback(self):
-        for config in ({'SEARCH_PROVIDER':'tavily'},{'SEARCH_PROVIDER':'unknown'},{'SEARCH_PROVIDER':'tavily','TAVILY_API_KEY':'secret'}):
-            with self.assertRaises(ServiceError):select_search(config,lambda q:[])
-        fallback=lambda q:[]
-        searcher,name=select_search({'SEARCH_PROVIDER':'duckduckgo'},fallback)
-        self.assertIs(searcher,fallback)
-        self.assertIs(select_search({},fallback)[0],fallback)
-        self.assertIs(select_search({'TAVILY_API_KEY':'unused'},fallback)[0],fallback)
-        with patch('search_service.tavily_search',return_value=[]) as search:
-            searcher,name=select_search({'SEARCH_PROVIDER':'tavily','TAVILY_API_KEY':'secret','TAVILY_FREE_TIER_CONFIRMED':'true'},fallback)
-            searcher('query');search.assert_called_once_with('query','secret')
-            self.assertEqual(name,'Tavily')
+    def test_tavily_only_configuration(self):
+        for config in ({}, {'SEARCH_PROVIDER':'unknown'}, {'SEARCH_PROVIDER':'legacy'},
+                       {'SEARCH_PROVIDER':'tavily','TAVILY_API_KEY':'secret'}):
+            with self.assertRaises(ServiceError):select_search(config)
+        for provider in (None,'tavily'):
+            config={'TAVILY_API_KEY':'secret','TAVILY_FREE_TIER_CONFIRMED':'true'}
+            if provider:config['SEARCH_PROVIDER']=provider
+            with patch('search_service.tavily_search',return_value=[]) as search:
+                searcher,name=select_search(config)
+                searcher('query');search.assert_called_once_with('query','secret')
+                self.assertEqual(name,'Tavily')
 
     def test_alternative_query_dedup_and_truncation(self):
         calls=[]

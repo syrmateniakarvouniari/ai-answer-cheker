@@ -57,12 +57,10 @@ def tavily_search(query, key, post=None, depth="basic"):
     return results
 
 
-def select_search(config, duckduckgo_search):
-    provider = (config.get('SEARCH_PROVIDER') or 'duckduckgo').strip().lower()
-    if provider == 'duckduckgo':
-        return duckduckgo_search, 'DuckDuckGo μέσω DDGS'
+def select_search(config):
+    provider = (config.get('SEARCH_PROVIDER') or 'tavily').strip().lower()
     if provider != 'tavily':
-        raise ServiceError('Το SEARCH_PROVIDER πρέπει να είναι tavily ή duckduckgo.', 503)
+        raise ServiceError('Η αναζήτηση υποστηρίζει μόνο Tavily. Βάλε SEARCH_PROVIDER=tavily.', 503)
     key = (config.get('TAVILY_API_KEY') or '').strip()
     if not key:
         raise ServiceError('Λείπει το TAVILY_API_KEY από το τοπικό .env. Μην το στείλεις στο chat.', 503)

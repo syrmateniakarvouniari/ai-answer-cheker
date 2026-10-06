@@ -94,12 +94,6 @@ class Tests(unittest.TestCase):
     def test_quota_no_retry_or_fallback(self):
         with self.assertRaises(ServiceError) as ctx:self.call([errors.APIError(429,{'error':{'message':'fixture-secret'}})])
         self.assertEqual(ctx.exception.status,429);self.assertEqual(len(self.models.calls),1)
-    def test_search_calls_real_library_method(self):
-        with patch('ddgs.DDGS') as factory:
-            factory.return_value.text.return_value=search('x')
-            self.assertEqual(service.search_web('query'),search('x'))
-            factory.return_value.text.assert_called_once_with('query',backend='duckduckgo',max_results=5)
-
     def test_empty_changed_and_duplicate_final_claims_rejected(self):
         for rows in ([],[dict(result()['claims'][0],claim='Changed')],result()['claims']*2,
                      [dict(result()['claims'][0],claim_id=True)]):

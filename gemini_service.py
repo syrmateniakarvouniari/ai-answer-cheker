@@ -1,4 +1,4 @@
-"""Official Gemini SDK for text, DDGS/DuckDuckGo for actual search."""
+"""Official Gemini SDK for evaluation and Tavily for web search."""
 import json
 import re
 import time
@@ -85,14 +85,8 @@ def generated_json(client,model,instructions,data,schema):
     return json.loads(response.text)
 
 
-def search_web(query):
-    from ddgs import DDGS
-    # Only the selected free backend. No paid API or search fallback.
-    return list(DDGS(timeout=12).text(query,backend='duckduckgo',max_results=5))
-
-
 def probe_search():
-    searcher,provider=select_search(dotenv_values(ROOT/'.env',interpolate=False),search_web)
+    searcher,provider=select_search(dotenv_values(ROOT/'.env',interpolate=False))
     try:
         items=searcher('site.nasa.gov Phobos Mars moon')
     except ServiceError:raise
@@ -202,7 +196,7 @@ def audit_evidence(client, model, result, grounding):
 def evaluate(request,client=None,searcher=None):
     key,model=settings();owned=client is None
     if searcher is None:
-        searcher,provider=select_search(dotenv_values(ROOT/'.env',interpolate=False),search_web)
+        searcher,provider=select_search(dotenv_values(ROOT/'.env',interpolate=False))
     else:provider='Προσαρμοσμένη αναζήτηση'
     if owned:client=make_client(key)
     try:

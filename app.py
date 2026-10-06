@@ -1,4 +1,4 @@
-"""Local Greek UI with Gemini text + separate DuckDuckGo search adapter."""
+"""Local Greek UI with Gemini evaluation and Tavily search."""
 import json
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
